@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "todolist"
+name = "uit-api-class"
 version = "0.1.0"
 description = ""
 authors = ["Aayman-star <aayman.khalid1@gmail.com>"]
