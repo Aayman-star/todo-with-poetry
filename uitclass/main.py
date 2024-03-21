@@ -115,4 +115,4 @@ def delete_all(*,session:Session = Depends(get_session)):
     return {"message": f"{result.rowcount} todos deleted successfully"}
 
 
-    
+
