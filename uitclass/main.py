@@ -4,7 +4,7 @@ from fastapi import FastAPI,Body,Depends,HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, delete,select
 from uitclass.db import Todo, TodoCreate,TodoRead,TodoUpdate,create_db_and_tables,engine
-from typing import List
+from typing import List,Annotated
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,7 +34,7 @@ def get_session():
 
 
 @app.get("/",response_model=List[TodoRead])
-def read_todos(*,session:Session=Depends(get_session)):
+def read_todos(*,session: Annotated[Session, Depends(get_session)]):
     """Get all Todos"""
     todos = session.exec(select(Todo).order_by(Todo.id)).all()
     if not todos:
@@ -43,7 +43,7 @@ def read_todos(*,session:Session=Depends(get_session)):
 
 
 @app.post("/create-todo",response_model=TodoRead)
-def create_todo(*,session:Session = Depends(get_session),todo:TodoCreate):
+def create_todo(*,session: Annotated[Session, Depends(get_session)],todo:TodoCreate):
     """Creating and storing a todo item in the database"""
     todo_item = Todo.model_validate(todo)
     session.add(todo_item)
@@ -52,7 +52,7 @@ def create_todo(*,session:Session = Depends(get_session),todo:TodoCreate):
     return todo_item
 
 @app.get("/complete-todos",response_model=List[TodoRead])
-def get_complete_todos(*,session:Session = Depends(get_session)):
+def get_complete_todos(*,session: Annotated[Session, Depends(get_session)]):
     """Get all complete todos"""
     todos = session.exec(select(Todo).where(Todo.is_complete == True)).all()
     if not todos:
@@ -60,7 +60,7 @@ def get_complete_todos(*,session:Session = Depends(get_session)):
     return todos
 
 @app.get("/incomplete-todos",response_model=List[TodoRead])
-def get_complete_todos(*,session:Session = Depends(get_session)):
+def get_complete_todos(*,session: Annotated[Session, Depends(get_session)]):
     """Get all complete todos"""
     todos = session.exec(select(Todo).where(Todo.is_complete == False)).all()
     if not todos:
@@ -68,7 +68,7 @@ def get_complete_todos(*,session:Session = Depends(get_session)):
     return todos
 
 @app.put("/check-todo/{task_id}")
-def check_task(*,session:Session = Depends(get_session),task_id:int):
+def check_task(*,session: Annotated[Session, Depends(get_session)],task_id:int):
     """Check a task as complete"""
     db_todo = session.get(Todo, task_id)  # Get the todo item from the database
     if not db_todo :
@@ -80,7 +80,7 @@ def check_task(*,session:Session = Depends(get_session),task_id:int):
     return db_todo
 
 @app.put("/update-todo/{task_id}",response_model=TodoRead)
-def update_todo(*,session:Session = Depends(get_session),task_id:int,todo:TodoUpdate):
+def update_todo(*,session: Annotated[Session, Depends(get_session)],task_id:int,todo:TodoUpdate):
     print(task_id,todo)
     """Update Todo Description"""
     db_todo = session.get(Todo,task_id)
@@ -97,7 +97,7 @@ def update_todo(*,session:Session = Depends(get_session),task_id:int,todo:TodoUp
     return db_todo
 
 @app.delete("/del/{todo_id}")
-def delete_todo(*,session:Session = Depends(get_session),todo_id:int):
+def delete_todo(*,session: Annotated[Session, Depends(get_session)],todo_id:int):
     """Delete a todo from the database"""
     print(f"This is the id {todo_id}")
     todo = session.get(Todo,todo_id)
@@ -108,7 +108,7 @@ def delete_todo(*,session:Session = Depends(get_session),todo_id:int):
     return {"message": "Todo deleted successfully"}
 
 @app.delete("/delete-all")
-def delete_all(*,session:Session = Depends(get_session)):
+def delete_all(*,session: Annotated[Session, Depends(get_session)]):
     """Delete all todos from the database"""
     result = session.exec(delete(Todo))
     session.commit()
